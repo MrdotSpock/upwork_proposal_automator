@@ -6,9 +6,11 @@ console.log('Environment check:');
 console.log('OPENAI_API_KEY exists:',!!process.env.OPENAI_API_KEY);
 console.log('OPENAI_API_KEY length:',process.env.OPENAI_API_KEY?.length);
 
-const puppeteer=require('puppeteer');
+
 const OpenAI=require('openai');
 const {spawn}=require('child_process');
+const puppeteer=require('puppeteer-extra');
+const StealthPlugin=require('puppeteer-extra-plugin-stealth');
 
 const openai=new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
@@ -68,10 +70,9 @@ class ProposalSubmitter {
         // Set display environment variable
         process.env.DISPLAY=this.display;
 
-        // Start Xvfb with a larger screen size and color depth
         this.xvfbProcess=spawn('Xvfb',[
             this.display,
-            '-screen','0','1920x1080x24',
+            '-screen','0','1024x768x24',
             '-ac'
         ]);
 
@@ -91,31 +92,26 @@ class ProposalSubmitter {
             },2000);
         });
 
-        // Start XFCE session
+        // Start a basic window manager (fluxbox)
         try {
-            const xfce=spawn('startxfce4',['-display',this.display]);
-            xfce.stderr.on('data',(data) => {
-                console.error('XFCE error:',data.toString());
+            const fluxbox=spawn('fluxbox',['-display',this.display]);
+            fluxbox.stderr.on('data',(data) => {
+                console.error('Fluxbox error:',data.toString());
             });
-            // Give XFCE time to start
-            await new Promise(resolve => setTimeout(resolve,5000));
+            // Give fluxbox time to start
+            await new Promise(resolve => setTimeout(resolve,1000));
         } catch(error) {
-            console.log('Could not start XFCE:',error);
+            console.log('Could not start window manager:',error);
         }
 
-        // Start VNC server with better settings
+        // Start VNC server
         console.log('Starting VNC server...');
         this.vncProcess=spawn('x11vnc',[
             '-display',this.display,
             '-forever',
             '-passwd','mySecretPassword',
             '-shared',
-            '-geometry','1920x1080',
-            '-depth','24',
-            '-rfbport','5900',
-            '-noxdamage',
-            '-noxfixes',
-            '-noxrecord'
+            '-geometry','1024x768'
         ]);
 
         // Add error handling for VNC
@@ -153,7 +149,6 @@ class ProposalSubmitter {
         console.log('2. SSH port forwarding (if direct connection fails):');
         console.log('   First run: ssh -L 5900:localhost:5900 your-vps-ip');
         console.log('   Then connect to: localhost:5900');
-        console.log('Password: mySecretPassword');
     }
 
     async stopVirtualDisplay() {
@@ -179,6 +174,7 @@ class ProposalSubmitter {
         try {
             await this.startVirtualDisplay();
 
+            puppeteer.use(StealthPlugin());
             this.browser=await puppeteer.launch({
                 headless: false,  // Use real browser with virtual display
                 defaultViewport: {
