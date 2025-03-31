@@ -1,0 +1,22 @@
+{
+    "name": "upwork-proposal-automation",
+    "version": "1.0.0",
+    "description": "Automated system for finding and applying to Upwork jobs",
+    "main": "index.js",
+    "scripts": {
+        "start": "node index.js",
+        "test": "node proposal_submitter.js",
+        "test-captcha": "node test_captcha.js",
+        "install-xvfb": "apt-get update && apt-get install -y xvfb",
+        "test-vnc": "node test_vnc.js"
+    },
+    "dependencies": {
+        "axios": "^1.6.7",
+        "dotenv": "^16.4.1",
+        "openai": "^4.28.0",
+        "puppeteer": "^22.0.0"
+    },
+    "author": "",
+    "license": "MIT",
+    "private": true
+} 
