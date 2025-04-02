@@ -1,43 +1,63 @@
-
-const {submitProposal}=require('./proposal_submitter');
+const ProposalSubmitter=require('./proposal_submitter');
+const {generateProposal}=require('./wordware_proposal_generator');
 
 async function main() {
+    // Configuration
+    const config={
+        useVirtualDisplay: process.env.USE_VIRTUAL_DISPLAY==='true',
+        maxProposalsPerDay: parseInt(process.env.MAX_PROPOSALS_PER_DAY)||50,
+        minDelayBetweenProposals: parseInt(process.env.MIN_DELAY_BETWEEN_PROPOSALS)||300,
+        maxDelayBetweenProposals: parseInt(process.env.MAX_DELAY_BETWEEN_PROPOSALS)||600
+    };
+
+    console.log('Starting Upwork proposal automation with config:',config);
+
+    const submitter=new ProposalSubmitter(config);
+    let proposalsSubmitted=0;
+
     try {
-        // 1. Fetch jobs from Upwork
-        // console.log('Fetching jobs from Upwork...');
-        // const jobs=await fetchJobs();
+        await submitter.login();
+        console.log('Login completed');
 
-        // // 2. Filter jobs based on our criteria
-        // console.log('Filtering jobs...');
-        // const filteredJobs=await filterJobs(jobs);
+        // while(proposalsSubmitted<config.maxProposalsPerDay) {
+        //     const jobs=await getJobs();
+        //     console.log(`Found ${jobs.length} jobs to process`);
 
-        // // 3. For each filtered job, generate and submit proposal
-        // console.log(`Processing ${filteredJobs.length} jobs...`);
-        // for(const job of filteredJobs) {
-        //     try {
-        //         // Generate proposal
-        //         console.log(`Generating proposal for job: ${job.title}`);
-        //         const proposal=await generateProposal(job);
+        //     for(const job of jobs) {
+        //         if(proposalsSubmitted>=config.maxProposalsPerDay) {
+        //             console.log('Reached daily proposal limit');
+        //             break;
+        //         }
 
-        //         // Submit proposal
-        //         console.log('Submitting proposal...');
-        //         await submitProposal(job,proposal);
+        //         try {
+        //             const proposal=await generateProposal(job);
+        //             if(proposal) {
+        //                 await submitter.submitProposal(job,proposal);
+        //                 proposalsSubmitted++;
+        //                 console.log(`Proposal submitted successfully (${proposalsSubmitted}/${config.maxProposalsPerDay})`);
 
-        //         // Wait between submissions to avoid rate limiting
-        //         await new Promise(resolve => setTimeout(resolve,5000));
-        //     } catch(error) {
-        //         console.error(`Error processing job ${job.title}:`,error);
-        //         continue;
+        //                 // Random delay between proposals
+        //                 const delay=Math.floor(Math.random()*(config.maxDelayBetweenProposals-config.minDelayBetweenProposals+1))+config.minDelayBetweenProposals;
+        //                 console.log(`Waiting ${delay} seconds before next proposal...`);
+        //                 await sleep(delay*1000);
+        //             }
+        //         } catch(error) {
+        //             console.error('Error processing job:',error);
+        //         }
         //     }
+
+        //     // Wait before checking for new jobs
+        //     await sleep(300000); // 5 minutes
         // }
-
-        await submitProposal(null,null);
-
-        console.log('Job processing completed!');
+        const job={url: 'https://www.upwork.com/jobs/~01f900000000000000000000'};
+        // const proposal = await generateProposal(job);
+        await submitter.submitProposal(job,'test proposal');
     } catch(error) {
-        console.error('Main process error:',error);
+        console.error('Error in main process:',error);
+        throw error;
+    } finally {
+        await submitter.cleanup();
     }
 }
 
-// Run the main function
-main(); 
+main().catch(console.error);
