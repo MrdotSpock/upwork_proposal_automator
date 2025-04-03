@@ -49,7 +49,7 @@ async function main() {
         //     // Wait before checking for new jobs
         //     await sleep(300000); // 5 minutes
         // }
-        const job={url: 'https://www.upwork.com/jobs/~01f900000000000000000000'};
+        const job={url: 'https://www.upwork.com/jobs/Health-Fitness-Apps_~021907387821270851220/?referrer_url_path=find_work_home'};
         // const proposal = await generateProposal(job);
         await submitter.submitProposal(job,'test proposal');
     } catch(error) {

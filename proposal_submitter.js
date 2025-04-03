@@ -20,6 +20,8 @@ class ProposalSubmitter {
         this.browser=null;
         this.page=null;
         this.initialized=false;
+        this.screenWidth=1920;
+        this.screenHeight=1080;
     }
 
     async initialize() {
@@ -93,7 +95,7 @@ class ProposalSubmitter {
         // Start Xvfb with a larger screen size and color depth
         this.xvfbProcess=spawn('Xvfb',[
             this.display,
-            '-screen','0','1920x1080x24',
+            '-screen','0',`${this.screenWidth}x${this.screenHeight}x24`,
             '-ac'
         ]);
 
@@ -132,7 +134,7 @@ class ProposalSubmitter {
             '-forever',
             '-passwd','mySecretPassword',
             '-shared',
-            '-geometry','1920x1080',
+            '-geometry',`${this.screenWidth}x${this.screenHeight}`,
             '-depth','24',
             '-rfbport','5900',
             '-noxdamage',
@@ -188,7 +190,7 @@ class ProposalSubmitter {
                 '--disable-dev-shm-usage',
                 '--disable-accelerated-2d-canvas',
                 '--disable-gpu',
-                '--window-size=1920,1080'
+                `--window-size=${this.screenWidth},${this.screenHeight}`
             ]
         };
 
@@ -198,7 +200,7 @@ class ProposalSubmitter {
 
         this.browser=await puppeteer.launch(options);
         this.page=await this.browser.newPage();
-        await this.page.setViewport({width: 1920,height: 1080});
+        await this.page.setViewport({width: this.screenWidth,height: this.screenHeight});
         console.log('Browser started successfully');
     }
 
@@ -225,15 +227,26 @@ class ProposalSubmitter {
                 }
 
                 case "scroll": {
-                    const {x,y,scrollX,scrollY}=action;
+                    console.log('Scrolling...',action);
+                    const {x,y,scroll_x,scroll_y}=action;
                     await this.page.mouse.move(x,y);
-                    await this.page.evaluate(`window.scrollBy(${scrollX}, ${scrollY})`);
+                    await this.page.evaluate(`window.scrollBy(${scroll_x}, ${scroll_y})`);
                     break;
                 }
                 case "wait": {
                     await new Promise(resolve => setTimeout(resolve,2000));
                     break;
                 }
+
+                case "drag": {
+                    const {x,y,scroll_x,scroll_y}=action;
+                    await this.page.mouse.move(x,y);
+                    await this.page.mouse.down();
+                    await this.page.evaluate(`window.scrollBy(${scroll_x}, ${scroll_y})`);
+                    await this.page.mouse.up();
+                    break;
+                }
+
                 case "navigate": {
                     const {url}=action;
                     await this.page.goto(url,{waitUntil: 'networkidle0'});
@@ -248,16 +261,26 @@ class ProposalSubmitter {
 
                 case "type": {
                     const {text}=action;
-                    if(text.includes("username")) {
-                        console.log('Typing username:');
-                        await this.page.keyboard.type(process.env.UPWORK_USERNAME);
-                    } else if(text.includes("password")) {
-                        console.log('Typing password:');
-                        await this.page.keyboard.type(process.env.UPWORK_PASSWORD);
-                    }
+                    await this.page.keyboard.type(text);
                     break;
                 }
 
+                case "keypress": {
+                    //get keys array
+                    const {keys}=action;
+                    if(keys.includes("CTRL")) {
+                        await this.page.keyboard.down("ControlLeft");
+                        //remove CTRL from keys
+                        const filteredKeys=keys.filter(key => key!=="CTRL");
+                        for(const key of filteredKeys) {
+                            await this.page.keyboard.press('Key'+key);
+                        }
+                        await this.page.keyboard.up("ControlLeft");
+                    } else if(keys.includes("BACKSPACE")) {
+                        await this.page.keyboard.press('Backspace');
+                    }
+                    break;
+                }
                 default:
                     console.log("Unhandled action type:",action.type);
             }
@@ -269,7 +292,6 @@ class ProposalSubmitter {
 
     async computerUseLoop(response) {
         while(true) {
-            console.log('Computer use loop response:',JSON.stringify(response,null,2));
             const computerCalls=response.output.filter(
                 item => item.type==="computer_call"
             );
@@ -298,6 +320,16 @@ class ProposalSubmitter {
                 }
             }
 
+            const summaries=response.output.filter(
+                item => item.type==="reasoning"
+            );
+
+            console.log('Summaries:',summaries);
+
+            if(summaries.length!==0&&summaries[0].summary.length!==0) {
+                console.log('Summary:',summaries[0].summary[0].text);
+            }
+
             const screenshot=await this.page.screenshot();
             const screenshotBase64=screenshot.toString('base64');
 
@@ -306,8 +338,8 @@ class ProposalSubmitter {
                 previous_response_id: response.id,
                 tools: [{
                     type: "computer_use_preview",
-                    display_width: 1024,
-                    display_height: 768,
+                    display_width: this.screenWidth,
+                    display_height: this.screenHeight,
                     environment: "browser"
                 }],
                 input: [{
@@ -400,7 +432,7 @@ class ProposalSubmitter {
             await this.page.click('#login_control_continue');
             console.log('Clicked continue, waiting for answer input field to appear');
             try {
-                await this.page.waitForSelector('#login_answer');
+                await this.page.waitForSelector('#login_answer',{timeout: 10000});
                 console.log('Answer input field found, typing answer');
                 await this.page.screenshot({path: 'screenshot_login_3.png'});
 
@@ -456,12 +488,23 @@ class ProposalSubmitter {
                 }],
                 input: [{
                     role: "user",
-                    content: `Fill out this proposal to the Upwork job. Here's the proposal content:
+                    content: `
+                    Your goal is to prefill the proposal page on Upwork. You are already on the proposal page.
+
+                    Start by clicking on 'Apply now' button, then scroll down to find the sections mentioned below.
+
+                    1. Find the 'How do you want to be paid' section, select 'By Project' and set 2000USD.
+
+                    2. Find the 'Cover Letter' section, fill it out with the proposal content below. 
+                    
+                    3. DO NOT SUBMIT IT. You can stop when you fill out those sections.
+
+                    The proposal content:
                     ${proposal}
-                    
-                    
-                    
-                    Please fill out the proposal form carefully. DO NOT SUBMIT IT. Just fill out the form and let me know when you are done.`
+                
+                    `
+
+
                 }],
                 reasoning: {
                     generate_summary: "concise"
