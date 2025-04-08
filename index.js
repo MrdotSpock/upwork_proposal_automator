@@ -1,5 +1,6 @@
 const ProposalSubmitter=require('./proposal_submitter');
-const {generateProposal}=require('./wordware_proposal_generator');
+// const {generateProposal}=require('./wordware_proposal_generator');
+const {generateProposal}=require('./n8n_proposal_generator');
 
 async function main() {
     // Configuration
@@ -16,8 +17,7 @@ async function main() {
     let proposalsSubmitted=0;
 
     try {
-        await submitter.login();
-        console.log('Login completed');
+
 
         // while(proposalsSubmitted<config.maxProposalsPerDay) {
         //     const jobs=await getJobs();
@@ -49,9 +49,13 @@ async function main() {
         //     // Wait before checking for new jobs
         //     await sleep(300000); // 5 minutes
         // }
-        const job={url: 'https://www.upwork.com/jobs/Health-Fitness-Apps_~021907387821270851220/?referrer_url_path=find_work_home'};
+        const job={url: 'https://www.upwork.com/jobs/~021909261100877179099?referrer_url_path=%2Fnx%2Fsearch%2Fjobs%2Fdetails%2F~021909261100877179099'};
         // const proposal = await generateProposal(job);
-        await submitter.submitProposal(job,'test proposal');
+        const proposal=await generateProposal(job);
+        console.log("Proposal generated successfully",proposal);
+        await submitter.login();
+        console.log('Login completed');
+        await submitter.submitProposal(job,proposal);
     } catch(error) {
         console.error('Error in main process:',error);
         throw error;

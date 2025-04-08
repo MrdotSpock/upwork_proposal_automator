@@ -1,6 +1,6 @@
 async function generateProposal(job) {
     const r=await fetch(
-        `https://app.wordware.ai/api/released-app/d52a2169-cc9e-4f8b-b98a-bb5a6f066eed/run`,
+        process.env.WORDWARE_WEBHOOK_URL,
         {
             method: "post",
             body: JSON.stringify({

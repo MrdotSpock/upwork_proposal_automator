@@ -493,11 +493,11 @@ class ProposalSubmitter {
 
                     Start by clicking on 'Apply now' button, then scroll down to find the sections mentioned below.
 
-                    1. Find the 'How do you want to be paid' section, select 'By Project' and set 2000USD.
+                    1. Find the 'How do you want to be paid' section, select 'By Project' and set 2000USD. If it is a hourly job, keep the settings. If there is a schedule increase rate, set it to 5% every 6 months. If there are numbers filled in just keep them there and proceed to the next step.
 
                     2. Find the 'Cover Letter' section, fill it out with the proposal content below. 
                     
-                    3. DO NOT SUBMIT IT. You can stop when you fill out those sections.
+                    3. SUBMIT THE PROPOSAL by clicking on the 'Submit Proposal' button.
 
                     The proposal content:
                     ${proposal}
