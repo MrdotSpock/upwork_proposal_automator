@@ -300,9 +300,33 @@ class ProposalSubmitter {
                 break;
             }
 
+            // Check for pending safety checks
+            const pendingSafetyChecks=computerCalls.flatMap(call => call.pending_safety_checks||[]);
+            if(pendingSafetyChecks.length>0) {
+                console.log('\n⚠️ Safety checks required:');
+                pendingSafetyChecks.forEach(check => {
+                    console.log(`\nCode: ${check.code}`);
+                    console.log(`Message: ${check.message}`);
+                });
+
+                // Wait for user acknowledgment
+                console.log('\nPlease review the safety checks above.');
+                console.log('Do you want to proceed? (y/n)');
+                const answer=await new Promise(resolve => {
+                    process.stdin.once('data',data => {
+                        resolve(data.toString().trim().toLowerCase()==='y');
+                    });
+                });
+
+                if(!answer) {
+                    console.log('Operation cancelled by user.');
+                    break;
+                }
+            }
+
             for(const call of computerCalls) {
                 await this.handleComputerAction(call.action);
-                await this.page.screenshot({path: `screenshot_action_${Date.now()}.png`});
+                await this.page.screenshot({path: `screenshot_action.png`});
             }
 
             const messages=response.output.filter(
@@ -333,6 +357,26 @@ class ProposalSubmitter {
             const screenshot=await this.page.screenshot();
             const screenshotBase64=screenshot.toString('base64');
 
+            // Prepare the next request with acknowledged safety checks
+            const input=[{
+                call_id: computerCalls[computerCalls.length-1].call_id,
+                type: "computer_call_output",
+                output: {
+                    type: "input_image",
+                    image_url: `data:image/png;base64,${screenshotBase64}`
+                },
+                current_url: await this.page.url()
+            }];
+
+            // Add acknowledged safety checks if there were any
+            if(pendingSafetyChecks.length>0) {
+                input[0].acknowledged_safety_checks=pendingSafetyChecks.map(check => ({
+                    id: check.id,
+                    code: check.code,
+                    message: check.message
+                }));
+            }
+
             response=await openai.responses.create({
                 model: "computer-use-preview",
                 previous_response_id: response.id,
@@ -342,15 +386,7 @@ class ProposalSubmitter {
                     display_height: this.screenHeight,
                     environment: "browser"
                 }],
-                input: [{
-                    call_id: computerCalls[computerCalls.length-1].call_id,
-                    type: "computer_call_output",
-                    output: {
-                        type: "input_image",
-                        image_url: `data:image/png;base64,${screenshotBase64}`
-                    },
-                    current_url: await this.page.url()
-                }],
+                input: input,
                 truncation: "auto"
             });
         }
@@ -493,7 +529,7 @@ class ProposalSubmitter {
 
                     Start by clicking on 'Apply now' button, then scroll down to find the sections mentioned below.
 
-                    1. Find the 'How do you want to be paid' section, select 'By Project' and set 2000USD. If it is a hourly job, keep the settings. If there is a schedule increase rate, set it to 5% every 6 months. If there are numbers filled in just keep them there and proceed to the next step.
+                    1. If it is a hourly job, keep the settings. If there is a schedule increase rate, set it to 5% every 6 months. If there are numbers filled in just keep them there and proceed to the next step. Only if number is missing set a reasonable rate.
 
                     2. Find the 'Cover Letter' section, fill it out with the proposal content below. 
                     

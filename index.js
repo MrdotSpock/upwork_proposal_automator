@@ -49,7 +49,9 @@ async function main() {
         //     // Wait before checking for new jobs
         //     await sleep(300000); // 5 minutes
         // }
-        const job={url: 'https://www.upwork.com/jobs/~021909261100877179099?referrer_url_path=%2Fnx%2Fsearch%2Fjobs%2Fdetails%2F~021909261100877179099'};
+        const job={
+            url: 'https://www.upwork.com/jobs/~021909441014393028748?referrer_url_path=%2Fnx%2Fsearch%2Fjobs%2Fdetails%2F~021909441014393028748'
+        };
         // const proposal = await generateProposal(job);
         const proposal=await generateProposal(job);
         console.log("Proposal generated successfully",proposal);
