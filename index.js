@@ -20,7 +20,6 @@ async function main() {
         const job={
             url: 'https://www.upwork.com/jobs/~021910727087738324999?referrer_url_path=%2Fnx%2Fsearch%2Fjobs%2Fdetails%2F~021910727087738324999'
         };
-        // const proposal = await generateProposal(job);
         const proposal=await generateProposal(job);
         console.log("Proposal generated successfully",proposal);
         await submitter.login();
