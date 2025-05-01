@@ -143,6 +143,17 @@ The Computer Use API enables intelligent interaction with the Upwork website:
 - Check browser console for JavaScript errors
 - Consider running in virtual display mode to see exactly what's happening
 
+## Disclaimer
+**This code is intended for educational purposes only. The author is not liable** for any misuse of this software or for any violations of Upwork's Terms of Service that may result from its use. 
+
+By using this software, you acknowledge that:
+1. Web scraping and automation may violate Upwork's Terms of Service
+2. Your Upwork account may be suspended or terminated if detected
+3. Using this software is entirely at your own risk
+4. This project was created for academic research and demonstration purposes
+
+Users are responsible for ensuring their use of this software complies with all applicable laws, regulations, and service agreements. The author does not endorse or encourage any use of this software that violates Upwork's Terms of Service.
+
 ## License
 
 MIT 
