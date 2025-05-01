@@ -132,7 +132,7 @@ class ProposalSubmitter {
         this.vncProcess=spawn('x11vnc',[
             '-display',this.display,
             '-forever',
-            '-passwd','mySecretPassword',
+            '-passwd',process.env.VNC_PASSWORD,
             '-shared',
             '-geometry',`${this.screenWidth}x${this.screenHeight}`,
             '-depth','24',
@@ -329,21 +329,6 @@ class ProposalSubmitter {
                 await this.page.screenshot({path: `screenshot_action.png`});
             }
 
-            const messages=response.output.filter(
-                item => item.type==="message"
-            );
-
-            if(messages.length!==0) {
-                console.log('Message:',messages[0].content[0].text);
-                if(messages[0].content[0].text.includes("username")) {
-                    console.log('Typing username:');
-                    await this.page.keyboard.type(process.env.UPWORK_USERNAME);
-                } else if(messages[0].content[0].text.includes("password")) {
-                    console.log('Typing password:');
-                    await this.page.keyboard.type(process.env.UPWORK_PASSWORD);
-                }
-            }
-
             const summaries=response.output.filter(
                 item => item.type==="reasoning"
             );
@@ -442,6 +427,7 @@ class ProposalSubmitter {
             // console.log('CAPTCHA solved');
             // await this.page.screenshot({path: 'screenshot_post_captcha.png'});
 
+
             // Current Solution: Use Puppeteer for the actual login
             // Step 1: Enter email and click continue
             console.log('Waiting for email input field to appear');
@@ -533,7 +519,11 @@ class ProposalSubmitter {
 
                     2. Find the 'Cover Letter' section, fill it out with the proposal content below. 
                     
-                    3. SUBMIT THE PROPOSAL by clicking on the 'Submit Proposal' button.
+                    3. If there is a 'How long will this project take?' section, select the most appropriate option.
+
+                    4. SUBMIT THE PROPOSAL by clicking on the 'Submit Proposal' button.
+
+                    5. Make sure the proposal is submitted successfully. By waiting for the screen to change.
 
                     The proposal content:
                     ${proposal}
@@ -575,25 +565,5 @@ class ProposalSubmitter {
     }
 }
 
-async function submitProposal(job,proposal) {
-    const submitter=new ProposalSubmitter();
 
-    try {
-        await submitter.startVirtualDisplay();
-        await submitter.startBrowser();
-        await submitter.login();
-
-        await submitter.navigateToJob(job.url);
-        await submitter.submitProposal(job,proposal);
-        return true;
-    } catch(error) {
-        console.error('Error submitting proposal:',error);
-        throw error;
-    } finally {
-        await submitter.cleanup();
-    }
-}
-
-// Export the class as default and the function as named export
 module.exports=ProposalSubmitter;
-module.exports.submitProposal=submitProposal; 

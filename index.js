@@ -17,40 +17,8 @@ async function main() {
     let proposalsSubmitted=0;
 
     try {
-
-
-        // while(proposalsSubmitted<config.maxProposalsPerDay) {
-        //     const jobs=await getJobs();
-        //     console.log(`Found ${jobs.length} jobs to process`);
-
-        //     for(const job of jobs) {
-        //         if(proposalsSubmitted>=config.maxProposalsPerDay) {
-        //             console.log('Reached daily proposal limit');
-        //             break;
-        //         }
-
-        //         try {
-        //             const proposal=await generateProposal(job);
-        //             if(proposal) {
-        //                 await submitter.submitProposal(job,proposal);
-        //                 proposalsSubmitted++;
-        //                 console.log(`Proposal submitted successfully (${proposalsSubmitted}/${config.maxProposalsPerDay})`);
-
-        //                 // Random delay between proposals
-        //                 const delay=Math.floor(Math.random()*(config.maxDelayBetweenProposals-config.minDelayBetweenProposals+1))+config.minDelayBetweenProposals;
-        //                 console.log(`Waiting ${delay} seconds before next proposal...`);
-        //                 await sleep(delay*1000);
-        //             }
-        //         } catch(error) {
-        //             console.error('Error processing job:',error);
-        //         }
-        //     }
-
-        //     // Wait before checking for new jobs
-        //     await sleep(300000); // 5 minutes
-        // }
         const job={
-            url: 'https://www.upwork.com/jobs/~021909441014393028748?referrer_url_path=%2Fnx%2Fsearch%2Fjobs%2Fdetails%2F~021909441014393028748'
+            url: 'https://www.upwork.com/jobs/~021910727087738324999?referrer_url_path=%2Fnx%2Fsearch%2Fjobs%2Fdetails%2F~021910727087738324999'
         };
         // const proposal = await generateProposal(job);
         const proposal=await generateProposal(job);

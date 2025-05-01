@@ -1,4 +1,6 @@
 const {spawn}=require('child_process');
+const path=require('path');
+require('dotenv').config({path: path.resolve(__dirname,'.env')});
 
 class VNCTester {
     constructor() {
@@ -91,7 +93,7 @@ class VNCTester {
         this.vncProcess=spawn('x11vnc',[
             '-display',this.display,
             '-forever',
-            '-passwd','mySecretPassword',
+            '-passwd',process.env.VNC_PASSWORD,
             '-shared',
             '-geometry','1024x768'
         ]);
