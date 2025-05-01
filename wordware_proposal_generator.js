@@ -1,6 +1,6 @@
 async function generateProposal(job) {
     const r=await fetch(
-        process.env.WORDWARE_WEBHOOK_URL,
+        process.env.WORDWARE_PROPOSAL_WEBHOOK_URL,
         {
             method: "post",
             body: JSON.stringify({

@@ -1,0 +1,9 @@
+   UPWORK_USERNAME=your_username
+   UPWORK_PASSWORD=your_password
+   UPWORK_ANSWER=your_security_question_answer
+   OPENAI_API_KEY=your_openai_key
+   WORDWARE_API_KEY=your_wordware_api_key
+   WORDWARE_SCRAPE_WEBHOOK_URL=your_wordware_scrape_url
+   WORDWARE_PROPOSAL_WEBHOOK_URL=your_wordware_proposal_url
+   N8N_WEBHOOK_URL=your_n8n_webhook_url
+   VNC_PASSWORD=your_vnc_password
